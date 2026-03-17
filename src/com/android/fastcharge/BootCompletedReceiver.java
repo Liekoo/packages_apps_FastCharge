@@ -27,12 +27,26 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        // Restore saved charging mode, default to Fast mode (1)
-        String chargingMode = sharedPrefs.getString(mConfig.FASTCHARGE_KEY, FastChargeConfig.MODE_FAST);
-        
+        String chargingMode = sharedPrefs.getString(mConfig.FASTCHARGE_KEY, FastChargeConfig.MODE_SUPER_FAST);
+
         if (DEBUG)
             Log.d(TAG, "Restoring charging mode: " + chargingMode);
-        
-        FileUtils.writeLine(mConfig.getFastChargePath(), chargingMode);
+
+        // Skip write if Super Fast — kernel default is already 0
+        if (chargingMode.equals(FastChargeConfig.MODE_SUPER_FAST)) {
+            if (DEBUG)
+                Log.d(TAG, "Super Fast is kernel default, skipping write");
+            return;
+        }
+
+        try {
+            if (FileUtils.fileExists(mConfig.getFastChargePath())) {
+                FileUtils.writeLine(mConfig.getFastChargePath(), chargingMode);
+            } else {
+                Log.e(TAG, "Charge control node not found: " + mConfig.getFastChargePath());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to restore charging mode", e);
+        }
     }
 }

@@ -13,8 +13,8 @@
 
     <!-- Charging mode values (0=Slow, 1=Fast, 2=Super Fast) -->
     <string-array name="charging_mode_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
+        <item>12</item>
+        <item>9</item>
+        <item>0</item>
     </string-array>
 </resources>

@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.UserHandle;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -42,7 +43,7 @@ public class FastChargeTileService extends TileService {
 
     private void updateUI() {
         final Tile tile = getQsTile();
-        String currentMode = mConfig.getCurrentMode();
+        String currentMode = mConfig.getCurrentMode(this);
 
         switch (currentMode) {
             case FastChargeConfig.MODE_SLOW:
@@ -58,11 +59,11 @@ public class FastChargeTileService extends TileService {
                 tile.setState(Tile.STATE_ACTIVE);
                 break;
             default:
-                tile.setLabel(getString(R.string.charging_mode_fast));
+                tile.setLabel(getString(R.string.charging_mode_super_fast));
                 tile.setState(Tile.STATE_ACTIVE);
                 break;
         }
-        
+
         tile.updateTile();
     }
 
@@ -90,9 +91,9 @@ public class FastChargeTileService extends TileService {
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String currentMode = mConfig.getCurrentMode();
+        String currentMode = mConfig.getCurrentMode(this);
         String nextMode;
-        
+
         switch (currentMode) {
             case FastChargeConfig.MODE_SLOW:
                 nextMode = FastChargeConfig.MODE_FAST;
@@ -108,7 +109,11 @@ public class FastChargeTileService extends TileService {
                 break;
         }
 
-        FileUtils.writeLine(mConfig.getFastChargePath(), nextMode);
+        try {
+            FileUtils.writeLine(mConfig.getFastChargePath(), nextMode);
+        } catch (Exception e) {
+            Log.e("FastCharge", "Failed to write charging mode", e);
+        }
 
         sharedPrefs.edit().putString(mConfig.FASTCHARGE_KEY, nextMode).commit();
 

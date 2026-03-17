@@ -7,9 +7,9 @@ on boot
     chown system system /sys/class/qcom-battery/night_charging
     chmod 0664 /sys/class/qcom-battery/night_charging
 
-    # Allow system to modify quick_charge_type
-    chown system system /sys/class/qcom-battery/quick_charge_type
-    chmod 0664 /sys/class/qcom-battery/quick_charge_type
+    # Allow system to modify charge_control_limit
+    chown system system /sys/class/power_supply/battery/charge_control_limit
+    chmod 0664 /sys/class/power_supply/battery/charge_control_limit
 
     # Allow system to modify charging current
     chown system system /sys/class/power_supply/battery/constant_charge_current

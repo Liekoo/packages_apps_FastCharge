@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
+import android.util.Log;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
@@ -34,8 +35,8 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
             String action = intent.getAction();
             if (action.equals(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED)) {
                 if (mInternalModeChange) {
-                        mInternalModeChange = false;
-                        return;
+                    mInternalModeChange = false;
+                    return;
                 }
 
                 if (mChargingModePreference == null) return;
@@ -54,12 +55,12 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
         setPreferencesFromResource(R.xml.fastcharge_settings, rootKey);
         mConfig = FastChargeConfig.getInstance(getContext());
         mChargingModePreference = (ListPreference) findPreference(mConfig.FASTCHARGE_KEY);
-        
+
         if (FileUtils.fileExists(mConfig.getFastChargePath())) {
             mChargingModePreference.setEnabled(true);
             mChargingModePreference.setOnPreferenceChangeListener(this);
-            
-            String currentMode = mConfig.getCurrentMode();
+
+            String currentMode = mConfig.getCurrentMode(getContext());
             mChargingModePreference.setValue(currentMode);
             updateSummary(currentMode);
         } else {
@@ -75,7 +76,7 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
     @Override
     public void onResume() {
         super.onResume();
-        String currentMode = mConfig.getCurrentMode();
+        String currentMode = mConfig.getCurrentMode(getContext());
         mChargingModePreference.setValue(currentMode);
         updateSummary(currentMode);
     }
@@ -89,7 +90,11 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
             String mode = (String) newValue;
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
-            FileUtils.writeLine(mConfig.getFastChargePath(), mode);
+            try {
+                FileUtils.writeLine(mConfig.getFastChargePath(), mode);
+            } catch (Exception e) {
+                Log.e("FastCharge", "Failed to write charging mode", e);
+            }
 
             sharedPrefs.edit().putString(mConfig.FASTCHARGE_KEY, mode).commit();
 
@@ -105,7 +110,7 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
 
     private void updateSummary(String mode) {
         if (mChargingModePreference == null) return;
-        
+
         String summary;
         switch (mode) {
             case FastChargeConfig.MODE_SLOW:
@@ -118,7 +123,7 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
                 summary = getString(R.string.charging_mode_super_fast);
                 break;
             default:
-                summary = getString(R.string.charging_mode_fast);
+                summary = getString(R.string.charging_mode_super_fast);
                 break;
         }
         mChargingModePreference.setSummary(summary);

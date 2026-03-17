@@ -6,7 +6,8 @@
 package com.android.fastcharge;
 
 import android.content.Context;
-
+import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
 import com.android.fastcharge.utils.FileUtils;
 
 public class FastChargeConfig {
@@ -24,11 +25,11 @@ public class FastChargeConfig {
 
     public static final String FASTCHARGE_KEY = "wired_charging_mode";
 
-    public static final String FASTCHARGE_PATH = "/sys/class/qcom-battery/quick_charge_type";
+    public static final String FASTCHARGE_PATH = "/sys/class/power_supply/battery/charge_control_limit";
 
-    public static final String MODE_SLOW = "1";
-    public static final String MODE_FAST = "2";
-    public static final String MODE_SUPER_FAST = "3";
+    public static final String MODE_SLOW = "12";
+    public static final String MODE_FAST = "9";
+    public static final String MODE_SUPER_FAST = "0";
 
     public static final String ACTION_FAST_CHARGE_SERVICE_CHANGED = "com.android.fastcharge.FAST_CHARGE_SERVICE_CHANGED";
     public static final String EXTRA_FAST_CHARGE_MODE = "fastchargingmode";
@@ -40,14 +41,12 @@ public class FastChargeConfig {
         return FASTCHARGE_PATH;
     }
 
-    public String getCurrentMode() {
-        String value = FileUtils.readOneLine(FASTCHARGE_PATH);
-        if (value != null) {
-            value = value.trim();
-            if (value.equals(MODE_SLOW) || value.equals(MODE_FAST) || value.equals(MODE_SUPER_FAST)) {
-                return value;
-            }
+    public String getCurrentMode(Context context) {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String savedMode = sharedPrefs.getString(FASTCHARGE_KEY, MODE_SUPER_FAST);
+        if (savedMode.equals(MODE_SLOW) || savedMode.equals(MODE_FAST) || savedMode.equals(MODE_SUPER_FAST)) {
+            return savedMode;
         }
-        return MODE_SLOW; // kernel default is "1" (Slow)
+        return MODE_SUPER_FAST;
     }
- }
+}
