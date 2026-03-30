@@ -80,7 +80,7 @@ this project already has fastcharge implementation embedded as based so it only 
 ## All Credits to:
 
 - **Developer**: kenway214
-- **Developer**: Liekoo
+- **Contributor**: Liekoo
 - **Based on Device**: Xiaomi Poco F6 (peridot)
 - **Adapted to Saphire**: Redmi note 13 4G (sapphire)
 - **Original Concept**: [YAAP FastCharge](https://github.com/yaap/packages_apps_FastCharge)
