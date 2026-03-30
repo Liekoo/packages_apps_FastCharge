@@ -4,7 +4,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg)](https://www.android.com)
 [![API](https://img.shields.io/badge/API-36%2B-brightgreen.svg)](https://android-arsenal.com/api?level=36)
 
-A modern Android system app for controlling charging speeds on Xiaomi Redmi Note 13 4G (Sapphire) based on Poco F6 (peridot) with Material Expressive design.
+A modern Android system app for controlling charging speeds for Xiaomi Redmi Note 13 4G (Sapphire) based on Poco F6 (peridot) with Material Expressive design.
 
 ## Overview
 
@@ -21,7 +21,7 @@ FastCharge provides a user-friendly interface to control your device's charging 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/poco-f6-peridot/packages_apps_FastCharge -b master packages/apps/FastCharge
+git clone https://github.com/Liekoo/packages_apps_FastCharge -b 16-qpr2 packages/apps/FastCharge
 ```
 
 ### 2. Add to Device Makefile
@@ -51,27 +51,16 @@ m bacon
 
 ## Charging Modes
 
-| Mode | sport_mode | smart_chg |
-|------|------------|-----------|
-| **0 - Slow** | 0 | 0 |
-| **1 - Fast** | 0 | 8 |
-| **2 - Super Fast** | 1 | 8 |
+| Mode | charge_control_limit |
+|------|------------|
+| **0 - Slow** | 12 |
+| **1 - Fast** | 9 |
+| **2 - Super Fast** | 0 |
 
-## Kernel Patches Required
-
-The following kernel commits are required for FastCharge to function:
-
-1. **Initial FastCharge Implementation**
-   - 
-   - Adds basic fastcharge_enable node
-
-2. **Multi-Mode Support**
-   -
-   - Implements 3-mode charging system
-
-3. **Mode Detection Fix**
-   - 
-   - Fixes mode 1 detection for Xiaomi hardware quirk
+Overview:
+The following Implementation utilized charge_control_limit for choosing a fastcharge modes unlike other device
+that has the full control over kernel in our case we just utilized what's kernel node is exposed in regards with charging
+this project already has fastcharge implementation embedded as based so it only needs to be limit for some cases.
 
 ## Usage
 
