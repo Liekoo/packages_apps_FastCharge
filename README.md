@@ -21,7 +21,7 @@ FastCharge provides a user-friendly interface to control your device's charging 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Liekoo/packages_apps_FastCharge -b 16-qpr2 packages/apps/FastCharge
+git clone -b 16-qpr2 https://github.com/Liekoo/packages_apps_FastCharge packages/apps/FastCharge
 ```
 
 ### 2. Add to Device Makefile
