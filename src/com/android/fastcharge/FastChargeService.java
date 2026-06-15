@@ -31,7 +31,7 @@ public class FastChargeService extends Service {
 
         try {
             if (FileUtils.fileExists(mConfig.getFastChargePath())) {
-                String current = FileUtils.readLine(mConfig.getFastChargePath());
+                String current = FileUtils.readOneLine(mConfig.getFastChargePath());
                 if (!chargingMode.equals(current)) {
                     FileUtils.writeLine(mConfig.getFastChargePath(), chargingMode);
                     Log.d(TAG, "Restored charging mode [" + reason + "]: " + chargingMode);
