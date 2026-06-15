@@ -24,10 +24,13 @@
             android:exported="true">
             <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.SCREEN_ON" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+	<service
+            android:name=".FastChargeService"
+            android:exported="false" />
 
         <!-- FastCharge -->
         <activity

@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import androidx.preference.PreferenceManager;
-
 import com.android.fastcharge.utils.FileUtils;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
@@ -24,9 +23,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             Log.d(TAG, "Received boot completed intent");
 
         FastChargeConfig mConfig = FastChargeConfig.getInstance(context);
-
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-
         String chargingMode = sharedPrefs.getString(mConfig.FASTCHARGE_KEY, FastChargeConfig.MODE_SUPER_FAST);
 
         if (DEBUG)
@@ -36,17 +33,19 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         if (chargingMode.equals(FastChargeConfig.MODE_SUPER_FAST)) {
             if (DEBUG)
                 Log.d(TAG, "Super Fast is kernel default, skipping write");
-            return;
+        } else {
+            try {
+                if (FileUtils.fileExists(mConfig.getFastChargePath())) {
+                    FileUtils.writeLine(mConfig.getFastChargePath(), chargingMode);
+                } else {
+                    Log.e(TAG, "Charge control node not found: " + mConfig.getFastChargePath());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to restore charging mode", e);
+            }
         }
 
-        try {
-            if (FileUtils.fileExists(mConfig.getFastChargePath())) {
-                FileUtils.writeLine(mConfig.getFastChargePath(), chargingMode);
-            } else {
-                Log.e(TAG, "Charge control node not found: " + mConfig.getFastChargePath());
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to restore charging mode", e);
-        }
+        // Always start the service regardless of mode
+        context.startService(new Intent(context, FastChargeService.class));
     }
 }
