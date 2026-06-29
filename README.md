@@ -4,7 +4,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg)](https://www.android.com)
 [![API](https://img.shields.io/badge/API-36%2B-brightgreen.svg)](https://android-arsenal.com/api?level=36)
 
-A modern Android system app for controlling charging speeds for Xiaomi Redmi Note 13 4G (Sapphire) based on Poco F6 (peridot) with Material Expressive design.
+A modern Android system app for controlling charging speeds for Xiaomi Redmi Note 13 4G (Sapphire) with Material Expressive design.
 
 ## Overview
 
@@ -79,11 +79,10 @@ this project already has fastcharge implementation embedded as based so it only 
 
 ## All Credits to:
 
-- **Developer**: kenway214
-- **Contributor**: Liekoo
-- **Based on Device**: Xiaomi Poco F6 (peridot)
+- **Developer**: Liekoo
 - **Adapted to Saphire**: Redmi note 13 4G (sapphire)
-- **Original Concept**: [YAAP FastCharge](https://github.com/yaap/packages_apps_FastCharge)
+- **Original Concept**: [Peridot FastCharge](https://github.com/peridot-hyperos-2/packages_apps_FastCharge)
+- All thanks to @kenway214 for Original Concept
 - **Inspiration**: Xiaomi TurboCharging implementation
 - **Design**: Material Design 3 Expressive theme
 
@@ -93,4 +92,4 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 ---
 
-**Made with ⚡ for Poco F6 (peridot)**
+**Made specifically ⚡ for Redmi Note 14 4G GLOBAL/NFC (sapphire/sapphiren)**
