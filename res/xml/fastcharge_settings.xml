@@ -7,21 +7,48 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/fast_charge_title">
 
-    <PreferenceCategory>
-        <!-- FastCharge illustration -->
+    <PreferenceCategory android:key="fastcharge_header">
         <com.android.fastcharge.ImagePreference
             android:key="fastcharge_illustration"
             android:selectable="false" />
+
+        <!-- Live status: charging state, level, temperature -->
+        <Preference
+            android:key="fastcharge_status"
+            android:title="@string/status_title"
+            android:selectable="false"
+            android:persistent="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory>
-        <ListPreference
-            android:key="wired_charging_mode"
-            android:title="@string/wired_charging_mode_title"
-            android:summary="@string/wired_charging_mode_summary"
-            android:defaultValue="1"
-            android:entries="@array/charging_mode_entries"
-            android:entryValues="@array/charging_mode_values" />
+    <PreferenceCategory
+        android:key="fastcharge_modes"
+        android:title="@string/wired_charging_mode_title">
+
+        <com.android.settingslib.widget.SelectorWithWidgetPreference
+            android:key="mode_super_fast"
+            android:title="@string/charging_mode_super_fast"
+            android:summary="@string/charging_mode_super_fast_summary"
+            android:persistent="false" />
+
+        <com.android.settingslib.widget.SelectorWithWidgetPreference
+            android:key="mode_fast"
+            android:title="@string/charging_mode_fast"
+            android:summary="@string/charging_mode_fast_summary"
+            android:persistent="false" />
+
+        <com.android.settingslib.widget.SelectorWithWidgetPreference
+            android:key="mode_slow"
+            android:title="@string/charging_mode_slow"
+            android:summary="@string/charging_mode_slow_summary"
+            android:persistent="false" />
+            
     </PreferenceCategory>
+
+    <Preference
+        android:key="fastcharge_footer"
+        android:summary="@string/footer_summary"
+        android:icon="@drawable/ic_fastcharge"
+        android:selectable="false"
+        android:persistent="false" />
 
 </PreferenceScreen>

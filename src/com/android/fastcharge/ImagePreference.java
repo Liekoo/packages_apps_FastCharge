@@ -10,24 +10,31 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
-import com.android.fastcharge.R;
 
 public class ImagePreference extends Preference {
 
-    private ImageView imageView;
+    private float mAlpha = 1f;
 
     public ImagePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setLayoutResource(R.layout.fastcharge_image_layout);
     }
 
+    /** Dims the illustration for slower modes (0.4 - 1.0). */
+    public void setIntensity(float alpha) {
+        if (mAlpha == alpha) return;
+        mAlpha = alpha;
+        notifyChanged();
+    }
+
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
 
-        imageView = (ImageView) holder.findViewById(R.id.fastcharge_image);
+        ImageView imageView = (ImageView) holder.findViewById(R.id.fastcharge_image);
         if (imageView != null) {
             imageView.setImageResource(R.drawable.ic_fastcharge_illustration);
+            imageView.animate().alpha(mAlpha).setDuration(250).start();
         }
     }
 }

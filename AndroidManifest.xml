@@ -55,7 +55,7 @@
             android:name=".FastChargeTileService"
             android:exported="true"
             android:icon="@drawable/ic_fastcharge"
-            android:label="@string/wired_charging_mode_title"
+            android:label="@string/tile_label"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE"/>

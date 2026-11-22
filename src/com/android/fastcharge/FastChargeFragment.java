@@ -10,43 +10,55 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.BatteryManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.UserHandle;
 import android.util.Log;
-import androidx.preference.ListPreference;
+import android.widget.Toast;
+
 import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
-import com.android.fastcharge.R;
 import com.android.fastcharge.utils.FileUtils;
+import com.android.settingslib.widget.SelectorWithWidgetPreference;
 import com.android.settingslib.widget.SettingsBasePreferenceFragment;
 
-public class FastChargeFragment extends SettingsBasePreferenceFragment implements
-        Preference.OnPreferenceChangeListener {
+public class FastChargeFragment extends SettingsBasePreferenceFragment
+        implements SelectorWithWidgetPreference.OnClickListener {
 
-    private ListPreference mChargingModePreference;
+    private static final String TAG = "FastCharge";
+
+    private static final String KEY_FOOTER = "fastcharge_footer";
+    private static final String KEY_ILLUSTRATION = "fastcharge_illustration";
+    private static final String KEY_STATUS = "fastcharge_status";
+
+    // Order matters: index lines up with MODE_VALUES / MODE_INTENSITY.
+    private static final String[] MODE_KEYS = {"mode_super_fast", "mode_fast", "mode_slow"};
+    private static final String[] MODE_VALUES = {
+            FastChargeConfig.MODE_SUPER_FAST,
+            FastChargeConfig.MODE_FAST,
+            FastChargeConfig.MODE_SLOW,
+    };
+    private static final float[] MODE_INTENSITY = {0.45f, 0.7f, 1f};
+
+    private final SelectorWithWidgetPreference[] mModePrefs =
+            new SelectorWithWidgetPreference[MODE_KEYS.length];
+    private ImagePreference mIllustration;
+    private Preference mStatus;
     private FastChargeConfig mConfig;
-    private boolean mInternalModeChange = false;
 
-    private final BroadcastReceiver mServiceStateReceiver = new BroadcastReceiver() {
+    /** Another surface (QS tile) changed the mode: just re-sync the UI. */
+    private final BroadcastReceiver mModeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED)) {
-                if (mInternalModeChange) {
-                    mInternalModeChange = false;
-                    return;
-                }
+            refresh(mConfig.getCurrentMode(context));
+        }
+    };
 
-                if (mChargingModePreference == null) return;
-
-                final String mode = intent.getStringExtra(mConfig.EXTRA_FAST_CHARGE_MODE);
-                if (mode != null) {
-                    mChargingModePreference.setValue(mode);
-                    updateSummary(mode);
-                }
-            }
+    private final BroadcastReceiver mBatteryReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateStatus(intent);
         }
     };
 
@@ -54,85 +66,110 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.fastcharge_settings, rootKey);
         mConfig = FastChargeConfig.getInstance(getContext());
-        mChargingModePreference = (ListPreference) findPreference(mConfig.FASTCHARGE_KEY);
 
-        if (FileUtils.fileExists(mConfig.getFastChargePath())) {
-            mChargingModePreference.setEnabled(true);
-            mChargingModePreference.setOnPreferenceChangeListener(this);
+        mIllustration = findPreference(KEY_ILLUSTRATION);
+        mStatus = findPreference(KEY_STATUS);
 
-            String currentMode = mConfig.getCurrentMode(getContext());
-            mChargingModePreference.setValue(currentMode);
-            updateSummary(currentMode);
-        } else {
-            mChargingModePreference.setSummary(R.string.wired_charging_mode_not_supported);
-            mChargingModePreference.setEnabled(false);
+        final boolean supported = FileUtils.fileExists(mConfig.getFastChargePath());
+        for (int i = 0; i < MODE_KEYS.length; i++) {
+            mModePrefs[i] = findPreference(MODE_KEYS[i]);
+            mModePrefs[i].setOnClickListener(this);
+            mModePrefs[i].setEnabled(supported);
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
-        getContext().registerReceiver(mServiceStateReceiver, filter, Context.RECEIVER_EXPORTED);
+        if (!supported) {
+            Preference footer = findPreference(KEY_FOOTER);
+            if (footer != null) {
+                footer.setSummary(R.string.wired_charging_mode_not_supported);
+            }
+        }
+
+        refresh(mConfig.getCurrentMode(getContext()));
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getContext().registerReceiver(mModeReceiver,
+                new IntentFilter(FastChargeConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED),
+                Context.RECEIVER_NOT_EXPORTED);
+        // Sticky: returns the latest battery state immediately.
+        Intent battery = getContext().registerReceiver(mBatteryReceiver,
+                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        if (battery != null) updateStatus(battery);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        String currentMode = mConfig.getCurrentMode(getContext());
-        mChargingModePreference.setValue(currentMode);
-        updateSummary(currentMode);
+        refresh(mConfig.getCurrentMode(getContext()));
     }
 
     @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (mConfig.FASTCHARGE_KEY.equals(preference.getKey())) {
-            mInternalModeChange = true;
-            Context mContext = getContext();
-
-            String mode = (String) newValue;
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-
-            try {
-                FileUtils.writeLine(mConfig.getFastChargePath(), mode);
-            } catch (Exception e) {
-                Log.e("FastCharge", "Failed to write charging mode", e);
-            }
-
-            sharedPrefs.edit().putString(mConfig.FASTCHARGE_KEY, mode).commit();
-
-            Intent intent = new Intent(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
-            intent.putExtra(mConfig.EXTRA_FAST_CHARGE_MODE, mode);
-            intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
-
-            updateSummary(mode);
-        }
-        return true;
-    }
-
-    private void updateSummary(String mode) {
-        if (mChargingModePreference == null) return;
-
-        String summary;
-        switch (mode) {
-            case FastChargeConfig.MODE_SLOW:
-                summary = getString(R.string.charging_mode_slow);
-                break;
-            case FastChargeConfig.MODE_FAST:
-                summary = getString(R.string.charging_mode_fast);
-                break;
-            case FastChargeConfig.MODE_SUPER_FAST:
-                summary = getString(R.string.charging_mode_super_fast);
-                break;
-            default:
-                summary = getString(R.string.charging_mode_super_fast);
-                break;
-        }
-        mChargingModePreference.setSummary(summary);
+    public void onStop() {
+        super.onStop();
+        getContext().unregisterReceiver(mModeReceiver);
+        getContext().unregisterReceiver(mBatteryReceiver);
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        getContext().unregisterReceiver(mServiceStateReceiver);
+    public void onRadioButtonClicked(SelectorWithWidgetPreference emitter) {
+        final Context context = getContext();
+        final int index = indexOfKey(emitter.getKey());
+        if (index < 0) return;
+        final String mode = MODE_VALUES[index];
+
+        if (!FileUtils.writeLine(mConfig.getFastChargePath(), mode)) {
+            Log.e(TAG, "Failed to write charging mode " + mode);
+            Toast.makeText(context, R.string.write_failed, Toast.LENGTH_SHORT).show();
+            refresh(mConfig.getCurrentMode(context)); // revert the radio
+            return;
+        }
+
+        // Only persist after the kernel accepted the value.
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString(FastChargeConfig.FASTCHARGE_KEY, mode).apply();
+
+        Intent intent = new Intent(FastChargeConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
+        intent.putExtra(FastChargeConfig.EXTRA_FAST_CHARGE_MODE, mode);
+        intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        context.sendBroadcastAsUser(intent, UserHandle.CURRENT);
+
+        refresh(mode);
     }
 
+    private void refresh(String mode) {
+        final int selected = indexOfValue(mode);
+        for (int i = 0; i < mModePrefs.length; i++) {
+            if (mModePrefs[i] != null) mModePrefs[i].setChecked(i == selected);
+        }
+        if (mIllustration != null) mIllustration.setIntensity(MODE_INTENSITY[selected]);
+    }
+
+    private void updateStatus(Intent battery) {
+        if (mStatus == null) return;
+        final int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
+        final int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, 100);
+        final float temp = battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10f;
+        final boolean plugged = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
+        final int percent = scale > 0 ? Math.round(level * 100f / scale) : level;
+
+        mStatus.setSummary(getString(
+                plugged ? R.string.status_charging : R.string.status_not_charging,
+                percent, temp));
+    }
+
+    private static int indexOfKey(String key) {
+        for (int i = 0; i < MODE_KEYS.length; i++) {
+            if (MODE_KEYS[i].equals(key)) return i;
+        }
+        return -1;
+    }
+
+    private static int indexOfValue(String value) {
+        for (int i = 0; i < MODE_VALUES.length; i++) {
+            if (MODE_VALUES[i].equals(value)) return i;
+        }
+        return MODE_VALUES.length - 1; // default: Super Fast
+    }
 }

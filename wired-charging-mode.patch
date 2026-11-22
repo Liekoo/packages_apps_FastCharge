@@ -1,0 +1,723 @@
+diff --git a/Android.bp b/Android.bp
+index 0e39664..12b54b0 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -22,6 +22,7 @@ android_app {
+ 
+     static_libs: [
+         "androidx.core_core",
++        "SettingsLibSelectorWithWidgetPreference",
+         "org.lineageos.settings.resources"
+     ],
+ 
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 02cff08..321ea87 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -55,7 +55,7 @@
+             android:name=".FastChargeTileService"
+             android:exported="true"
+             android:icon="@drawable/ic_fastcharge"
+-            android:label="@string/wired_charging_mode_title"
++            android:label="@string/tile_label"
+             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+             <intent-filter>
+                 <action android:name="android.service.quicksettings.action.QS_TILE"/>
+diff --git a/res/drawable/ic_tile_fast.xml b/res/drawable/ic_tile_fast.xml
+new file mode 100644
+index 0000000..96cc9b9
+--- /dev/null
++++ b/res/drawable/ic_tile_fast.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     SPDX-FileCopyrightText: 2025 kenway214
++     SPDX-License-Identifier: Apache-2.0
++-->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?attr/colorControlNormal">
++    <path
++        android:strokeColor="@android:color/white"
++        android:strokeWidth="1.5"
++        android:pathData="M5,7h12a2,2 0 0 1 2,2v6a2,2 0 0 1 -2,2H5a2,2 0 0 1 -2,-2V9a2,2 0 0 1 2,-2z" />
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M20,10h2v4h-2z" />
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M5.3,9.5h3.2v5H5.3zM9.9,9.5h3.2v5H9.9z" />
++</vector>
+diff --git a/res/drawable/ic_tile_slow.xml b/res/drawable/ic_tile_slow.xml
+new file mode 100644
+index 0000000..af97fc0
+--- /dev/null
++++ b/res/drawable/ic_tile_slow.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     SPDX-FileCopyrightText: 2025 kenway214
++     SPDX-License-Identifier: Apache-2.0
++-->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?attr/colorControlNormal">
++    <path
++        android:strokeColor="@android:color/white"
++        android:strokeWidth="1.5"
++        android:pathData="M5,7h12a2,2 0 0 1 2,2v6a2,2 0 0 1 -2,2H5a2,2 0 0 1 -2,-2V9a2,2 0 0 1 2,-2z" />
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M20,10h2v4h-2z" />
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M5.3,9.5h3.2v5H5.3z" />
++</vector>
+diff --git a/res/drawable/ic_tile_super_fast.xml b/res/drawable/ic_tile_super_fast.xml
+new file mode 100644
+index 0000000..50fd3d9
+--- /dev/null
++++ b/res/drawable/ic_tile_super_fast.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     SPDX-FileCopyrightText: 2025 kenway214
++     SPDX-License-Identifier: Apache-2.0
++-->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?attr/colorControlNormal">
++    <path
++        android:strokeColor="@android:color/white"
++        android:strokeWidth="1.5"
++        android:pathData="M5,7h12a2,2 0 0 1 2,2v6a2,2 0 0 1 -2,2H5a2,2 0 0 1 -2,-2V9a2,2 0 0 1 2,-2z" />
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M20,10h2v4h-2z" />
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M5.3,9.5h3.2v5H5.3zM9.9,9.5h3.2v5H9.9zM14.5,9.5h3.2v5h-3.2z" />
++</vector>
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index 5823fb9..b8b5316 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -6,14 +6,33 @@
+ <resources>
+ 
+     <!-- Fast Charge -->
+-    <string name="fast_charge_title">FastCharge</string>
+-    <string name="fast_charge_summary">Configure wired charging speed for your device</string>
+-    <string name="wired_charging_mode_title">Wired Charging Mode</string>
++    <string name="fast_charge_title">Wired charging mode</string>
++    <string name="fast_charge_summary">Choose how fast your phone charges with a cable</string>
++    <string name="wired_charging_mode_title">Wired charging speed</string>
+     <string name="wired_charging_mode_summary">Select charging speed: Slow reduces heat, Super Fast charges quickly</string>
+-    <string name="wired_charging_mode_not_supported">Wired Charging Mode is currently not supported by the kernel</string>
+-    
++    <string name="wired_charging_mode_not_supported">Wired charging speed is not supported by this kernel</string>
++    <string name="write_failed">Couldn\u2019t change charging speed</string>
++
+     <!-- Charging modes -->
+     <string name="charging_mode_slow">Slow</string>
+     <string name="charging_mode_fast">Fast</string>
+     <string name="charging_mode_super_fast">Super Fast</string>
++
++    <string name="charging_mode_slow_summary">Coolest and gentlest on the battery. Best for overnight.</string>
++    <string name="charging_mode_fast_summary">Balanced speed and heat. Good for everyday use.</string>
++    <string name="charging_mode_super_fast_summary">Maximum speed. The phone may run warmer.</string>
++
++    <!-- Quick Settings tile -->
++    <string name="tile_toast">Wired charging: %1$s</string>
++    <string name="tile_label">Wired charging</string>
++    <string name="tile_subtitle_unsupported">Not supported</string>
++    <string name="tile_subtitle_slow">Slow</string>
++    <string name="tile_subtitle_fast">Fast</string>
++    <string name="tile_subtitle_super_fast">Super Fast</string>
++
++    <!-- Live status -->
++    <string name="status_title">Status</string>
++    <string name="status_charging">Charging \u00b7 %1$d%% \u00b7 %2$.1f\u00b0C</string>
++    <string name="status_not_charging">Not charging \u00b7 %1$d%% \u00b7 %2$.1f\u00b0C</string>
++    <string name="footer_summary">Higher speeds charge faster but generate more heat. Your choice is restored after every reboot.</string>
+ </resources>
+diff --git a/res/xml/fastcharge_settings.xml b/res/xml/fastcharge_settings.xml
+index 44515f2..ed26d99 100644
+--- a/res/xml/fastcharge_settings.xml
++++ b/res/xml/fastcharge_settings.xml
+@@ -7,21 +7,47 @@
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:title="@string/fast_charge_title">
+ 
+-    <PreferenceCategory>
+-        <!-- FastCharge illustration -->
++    <PreferenceCategory android:key="fastcharge_header">
+         <com.android.fastcharge.ImagePreference
+             android:key="fastcharge_illustration"
+             android:selectable="false" />
++
++        <!-- Live status: charging state, level, temperature -->
++        <Preference
++            android:key="fastcharge_status"
++            android:title="@string/status_title"
++            android:selectable="false"
++            android:persistent="false" />
+     </PreferenceCategory>
+ 
+-    <PreferenceCategory>
+-        <ListPreference
+-            android:key="wired_charging_mode"
+-            android:title="@string/wired_charging_mode_title"
+-            android:summary="@string/wired_charging_mode_summary"
+-            android:defaultValue="1"
+-            android:entries="@array/charging_mode_entries"
+-            android:entryValues="@array/charging_mode_values" />
++    <PreferenceCategory
++        android:key="fastcharge_modes"
++        android:title="@string/wired_charging_mode_title">
++
++        <com.android.settingslib.widget.SelectorWithWidgetPreference
++            android:key="mode_slow"
++            android:title="@string/charging_mode_slow"
++            android:summary="@string/charging_mode_slow_summary"
++            android:persistent="false" />
++
++        <com.android.settingslib.widget.SelectorWithWidgetPreference
++            android:key="mode_fast"
++            android:title="@string/charging_mode_fast"
++            android:summary="@string/charging_mode_fast_summary"
++            android:persistent="false" />
++
++        <com.android.settingslib.widget.SelectorWithWidgetPreference
++            android:key="mode_super_fast"
++            android:title="@string/charging_mode_super_fast"
++            android:summary="@string/charging_mode_super_fast_summary"
++            android:persistent="false" />
+     </PreferenceCategory>
+ 
++    <Preference
++        android:key="fastcharge_footer"
++        android:summary="@string/footer_summary"
++        android:icon="@drawable/ic_fastcharge"
++        android:selectable="false"
++        android:persistent="false" />
++
+ </PreferenceScreen>
+diff --git a/src/com/android/fastcharge/FastChargeFragment.java b/src/com/android/fastcharge/FastChargeFragment.java
+index f9630a2..ce4fed7 100644
+--- a/src/com/android/fastcharge/FastChargeFragment.java
++++ b/src/com/android/fastcharge/FastChargeFragment.java
+@@ -10,43 +10,55 @@ import android.content.Context;
+ import android.content.Intent;
+ import android.content.IntentFilter;
+ import android.content.SharedPreferences;
++import android.os.BatteryManager;
+ import android.os.Bundle;
+-import android.os.Handler;
+ import android.os.UserHandle;
+ import android.util.Log;
+-import androidx.preference.ListPreference;
++import android.widget.Toast;
++
+ import androidx.preference.Preference;
+ import androidx.preference.PreferenceManager;
+ 
+-import com.android.fastcharge.R;
+ import com.android.fastcharge.utils.FileUtils;
++import com.android.settingslib.widget.SelectorWithWidgetPreference;
+ import com.android.settingslib.widget.SettingsBasePreferenceFragment;
+ 
+-public class FastChargeFragment extends SettingsBasePreferenceFragment implements
+-        Preference.OnPreferenceChangeListener {
++public class FastChargeFragment extends SettingsBasePreferenceFragment
++        implements SelectorWithWidgetPreference.OnClickListener {
++
++    private static final String TAG = "FastCharge";
++
++    private static final String KEY_FOOTER = "fastcharge_footer";
++    private static final String KEY_ILLUSTRATION = "fastcharge_illustration";
++    private static final String KEY_STATUS = "fastcharge_status";
++
++    // Order matters: index lines up with MODE_VALUES / MODE_INTENSITY.
++    private static final String[] MODE_KEYS = {"mode_slow", "mode_fast", "mode_super_fast"};
++    private static final String[] MODE_VALUES = {
++            FastChargeConfig.MODE_SLOW,
++            FastChargeConfig.MODE_FAST,
++            FastChargeConfig.MODE_SUPER_FAST,
++    };
++    private static final float[] MODE_INTENSITY = {0.45f, 0.7f, 1f};
+ 
+-    private ListPreference mChargingModePreference;
++    private final SelectorWithWidgetPreference[] mModePrefs =
++            new SelectorWithWidgetPreference[MODE_KEYS.length];
++    private ImagePreference mIllustration;
++    private Preference mStatus;
+     private FastChargeConfig mConfig;
+-    private boolean mInternalModeChange = false;
+ 
+-    private final BroadcastReceiver mServiceStateReceiver = new BroadcastReceiver() {
++    /** Another surface (QS tile) changed the mode: just re-sync the UI. */
++    private final BroadcastReceiver mModeReceiver = new BroadcastReceiver() {
+         @Override
+         public void onReceive(Context context, Intent intent) {
+-            String action = intent.getAction();
+-            if (action.equals(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED)) {
+-                if (mInternalModeChange) {
+-                    mInternalModeChange = false;
+-                    return;
+-                }
+-
+-                if (mChargingModePreference == null) return;
+-
+-                final String mode = intent.getStringExtra(mConfig.EXTRA_FAST_CHARGE_MODE);
+-                if (mode != null) {
+-                    mChargingModePreference.setValue(mode);
+-                    updateSummary(mode);
+-                }
+-            }
++            refresh(mConfig.getCurrentMode(context));
++        }
++    };
++
++    private final BroadcastReceiver mBatteryReceiver = new BroadcastReceiver() {
++        @Override
++        public void onReceive(Context context, Intent intent) {
++            updateStatus(intent);
+         }
+     };
+ 
+@@ -54,85 +66,110 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment implement
+     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+         setPreferencesFromResource(R.xml.fastcharge_settings, rootKey);
+         mConfig = FastChargeConfig.getInstance(getContext());
+-        mChargingModePreference = (ListPreference) findPreference(mConfig.FASTCHARGE_KEY);
+-
+-        if (FileUtils.fileExists(mConfig.getFastChargePath())) {
+-            mChargingModePreference.setEnabled(true);
+-            mChargingModePreference.setOnPreferenceChangeListener(this);
+-
+-            String currentMode = mConfig.getCurrentMode(getContext());
+-            mChargingModePreference.setValue(currentMode);
+-            updateSummary(currentMode);
+-        } else {
+-            mChargingModePreference.setSummary(R.string.wired_charging_mode_not_supported);
+-            mChargingModePreference.setEnabled(false);
++
++        mIllustration = findPreference(KEY_ILLUSTRATION);
++        mStatus = findPreference(KEY_STATUS);
++
++        final boolean supported = FileUtils.fileExists(mConfig.getFastChargePath());
++        for (int i = 0; i < MODE_KEYS.length; i++) {
++            mModePrefs[i] = findPreference(MODE_KEYS[i]);
++            mModePrefs[i].setOnClickListener(this);
++            mModePrefs[i].setEnabled(supported);
++        }
++
++        if (!supported) {
++            Preference footer = findPreference(KEY_FOOTER);
++            if (footer != null) {
++                footer.setSummary(R.string.wired_charging_mode_not_supported);
++            }
+         }
+ 
+-        IntentFilter filter = new IntentFilter();
+-        filter.addAction(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
+-        getContext().registerReceiver(mServiceStateReceiver, filter, Context.RECEIVER_EXPORTED);
++        refresh(mConfig.getCurrentMode(getContext()));
++    }
++
++    @Override
++    public void onStart() {
++        super.onStart();
++        getContext().registerReceiver(mModeReceiver,
++                new IntentFilter(FastChargeConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED),
++                Context.RECEIVER_NOT_EXPORTED);
++        // Sticky: returns the latest battery state immediately.
++        Intent battery = getContext().registerReceiver(mBatteryReceiver,
++                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
++        if (battery != null) updateStatus(battery);
+     }
+ 
+     @Override
+     public void onResume() {
+         super.onResume();
+-        String currentMode = mConfig.getCurrentMode(getContext());
+-        mChargingModePreference.setValue(currentMode);
+-        updateSummary(currentMode);
++        refresh(mConfig.getCurrentMode(getContext()));
+     }
+ 
+     @Override
+-    public boolean onPreferenceChange(Preference preference, Object newValue) {
+-        if (mConfig.FASTCHARGE_KEY.equals(preference.getKey())) {
+-            mInternalModeChange = true;
+-            Context mContext = getContext();
+-
+-            String mode = (String) newValue;
+-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+-
+-            try {
+-                FileUtils.writeLine(mConfig.getFastChargePath(), mode);
+-            } catch (Exception e) {
+-                Log.e("FastCharge", "Failed to write charging mode", e);
+-            }
++    public void onStop() {
++        super.onStop();
++        getContext().unregisterReceiver(mModeReceiver);
++        getContext().unregisterReceiver(mBatteryReceiver);
++    }
+ 
+-            sharedPrefs.edit().putString(mConfig.FASTCHARGE_KEY, mode).commit();
++    @Override
++    public void onRadioButtonClicked(SelectorWithWidgetPreference emitter) {
++        final Context context = getContext();
++        final int index = indexOfKey(emitter.getKey());
++        if (index < 0) return;
++        final String mode = MODE_VALUES[index];
++
++        if (!FileUtils.writeLine(mConfig.getFastChargePath(), mode)) {
++            Log.e(TAG, "Failed to write charging mode " + mode);
++            Toast.makeText(context, R.string.write_failed, Toast.LENGTH_SHORT).show();
++            refresh(mConfig.getCurrentMode(context)); // revert the radio
++            return;
++        }
+ 
+-            Intent intent = new Intent(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
+-            intent.putExtra(mConfig.EXTRA_FAST_CHARGE_MODE, mode);
+-            intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+-            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
++        // Only persist after the kernel accepted the value.
++        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
++        prefs.edit().putString(FastChargeConfig.FASTCHARGE_KEY, mode).apply();
+ 
+-            updateSummary(mode);
+-        }
+-        return true;
++        Intent intent = new Intent(FastChargeConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
++        intent.putExtra(FastChargeConfig.EXTRA_FAST_CHARGE_MODE, mode);
++        intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
++        context.sendBroadcastAsUser(intent, UserHandle.CURRENT);
++
++        refresh(mode);
+     }
+ 
+-    private void updateSummary(String mode) {
+-        if (mChargingModePreference == null) return;
+-
+-        String summary;
+-        switch (mode) {
+-            case FastChargeConfig.MODE_SLOW:
+-                summary = getString(R.string.charging_mode_slow);
+-                break;
+-            case FastChargeConfig.MODE_FAST:
+-                summary = getString(R.string.charging_mode_fast);
+-                break;
+-            case FastChargeConfig.MODE_SUPER_FAST:
+-                summary = getString(R.string.charging_mode_super_fast);
+-                break;
+-            default:
+-                summary = getString(R.string.charging_mode_super_fast);
+-                break;
++    private void refresh(String mode) {
++        final int selected = indexOfValue(mode);
++        for (int i = 0; i < mModePrefs.length; i++) {
++            if (mModePrefs[i] != null) mModePrefs[i].setChecked(i == selected);
+         }
+-        mChargingModePreference.setSummary(summary);
++        if (mIllustration != null) mIllustration.setIntensity(MODE_INTENSITY[selected]);
+     }
+ 
+-    @Override
+-    public void onDestroy() {
+-        super.onDestroy();
+-        getContext().unregisterReceiver(mServiceStateReceiver);
++    private void updateStatus(Intent battery) {
++        if (mStatus == null) return;
++        final int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
++        final int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, 100);
++        final float temp = battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10f;
++        final boolean plugged = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
++        final int percent = scale > 0 ? Math.round(level * 100f / scale) : level;
++
++        mStatus.setSummary(getString(
++                plugged ? R.string.status_charging : R.string.status_not_charging,
++                percent, temp));
+     }
+ 
+-}
+\ No newline at end of file
++    private static int indexOfKey(String key) {
++        for (int i = 0; i < MODE_KEYS.length; i++) {
++            if (MODE_KEYS[i].equals(key)) return i;
++        }
++        return -1;
++    }
++
++    private static int indexOfValue(String value) {
++        for (int i = 0; i < MODE_VALUES.length; i++) {
++            if (MODE_VALUES[i].equals(value)) return i;
++        }
++        return MODE_VALUES.length - 1; // default: Super Fast
++    }
++}
+diff --git a/src/com/android/fastcharge/FastChargeTileService.java b/src/com/android/fastcharge/FastChargeTileService.java
+index 39724ef..fe92d13 100644
+--- a/src/com/android/fastcharge/FastChargeTileService.java
++++ b/src/com/android/fastcharge/FastChargeTileService.java
+@@ -11,123 +11,133 @@ import android.content.Intent;
+ import android.content.IntentFilter;
+ import android.content.SharedPreferences;
+ import android.graphics.drawable.Icon;
+-import android.os.Handler;
+ import android.os.UserHandle;
+ import android.service.quicksettings.Tile;
+ import android.service.quicksettings.TileService;
+ import android.util.Log;
++import android.widget.Toast;
+ 
+ import androidx.preference.PreferenceManager;
+ 
+-import com.android.fastcharge.R;
+ import com.android.fastcharge.utils.FileUtils;
+ 
++/**
++ * Quick Settings tile. Tap cycles Slow -> Fast -> Super Fast and shows a toast.
++ * The icon itself encodes the mode (1, 2 or 3 bars), since compact tiles hide text. Long-press opens
++ * the settings page (QS_TILE_PREFERENCES on FastChargeActivity).
++ */
+ public class FastChargeTileService extends TileService {
+ 
+-    private FastChargeConfig mConfig;
++    private static final String TAG = "FastCharge";
+ 
+-    private Intent mFastChargeIntent;
++    // Index lines up across all three arrays.
++    private static final String[] MODES = {
++            FastChargeConfig.MODE_SLOW,
++            FastChargeConfig.MODE_FAST,
++            FastChargeConfig.MODE_SUPER_FAST,
++    };
++    private static final int[] SUBTITLES = {
++            R.string.tile_subtitle_slow,
++            R.string.tile_subtitle_fast,
++            R.string.tile_subtitle_super_fast,
++    };
++    private static final int[] ICONS = {
++            R.drawable.ic_tile_slow,
++            R.drawable.ic_tile_fast,
++            R.drawable.ic_tile_super_fast,
++    };
+ 
+-    private boolean mInternalModeChange;
++    private FastChargeConfig mConfig;
+ 
+-    private final BroadcastReceiver mServiceStateReceiver = new BroadcastReceiver() {
++    private final BroadcastReceiver mModeReceiver = new BroadcastReceiver() {
+         @Override
+         public void onReceive(Context context, Intent intent) {
+-            if (mInternalModeChange) {
+-                mInternalModeChange = false;
+-                return;
+-            }
+             updateUI();
+         }
+     };
+ 
+-    private void updateUI() {
+-        final Tile tile = getQsTile();
+-        String currentMode = mConfig.getCurrentMode(this);
+-
+-        switch (currentMode) {
+-            case FastChargeConfig.MODE_SLOW:
+-                tile.setLabel(getString(R.string.charging_mode_slow));
+-                tile.setState(Tile.STATE_INACTIVE);
+-                break;
+-            case FastChargeConfig.MODE_FAST:
+-                tile.setLabel(getString(R.string.charging_mode_fast));
+-                tile.setState(Tile.STATE_ACTIVE);
+-                break;
+-            case FastChargeConfig.MODE_SUPER_FAST:
+-                tile.setLabel(getString(R.string.charging_mode_super_fast));
+-                tile.setState(Tile.STATE_ACTIVE);
+-                break;
+-            default:
+-                tile.setLabel(getString(R.string.charging_mode_super_fast));
+-                tile.setState(Tile.STATE_ACTIVE);
+-                break;
+-        }
+-
+-        tile.updateTile();
+-    }
+-
+     @Override
+     public void onStartListening() {
+         super.onStartListening();
+         mConfig = FastChargeConfig.getInstance(this);
+-
++        registerReceiver(mModeReceiver,
++                new IntentFilter(FastChargeConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED),
++                Context.RECEIVER_NOT_EXPORTED);
+         updateUI();
+-
+-        IntentFilter filter = new IntentFilter(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
+-        registerReceiver(mServiceStateReceiver, filter, Context.RECEIVER_EXPORTED);
+     }
+ 
+     @Override
+     public void onStopListening() {
+         super.onStopListening();
+-        unregisterReceiver(mServiceStateReceiver);
++        unregisterReceiver(mModeReceiver);
+     }
+ 
+     @Override
+     public void onClick() {
+         super.onClick();
+-        mInternalModeChange = true;
+-
+-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+-
+-        String currentMode = mConfig.getCurrentMode(this);
+-        String nextMode;
+-
+-        switch (currentMode) {
+-            case FastChargeConfig.MODE_SLOW:
+-                nextMode = FastChargeConfig.MODE_FAST;
+-                break;
+-            case FastChargeConfig.MODE_FAST:
+-                nextMode = FastChargeConfig.MODE_SUPER_FAST;
+-                break;
+-            case FastChargeConfig.MODE_SUPER_FAST:
+-                nextMode = FastChargeConfig.MODE_SLOW;
+-                break;
+-            default:
+-                nextMode = FastChargeConfig.MODE_FAST;
+-                break;
++        if (!FileUtils.fileExists(mConfig.getFastChargePath())) {
++            updateUI();
++            return;
+         }
+ 
+-        try {
+-            FileUtils.writeLine(mConfig.getFastChargePath(), nextMode);
+-        } catch (Exception e) {
+-            Log.e("FastCharge", "Failed to write charging mode", e);
++        final String nextMode = MODES[(indexOf(mConfig.getCurrentMode(this)) + 1) % MODES.length];
++
++        // Only persist after the kernel accepted the value.
++        if (!FileUtils.writeLine(mConfig.getFastChargePath(), nextMode)) {
++            Log.e(TAG, "Failed to write charging mode " + nextMode);
++            updateUI();
++            return;
+         }
+ 
+-        sharedPrefs.edit().putString(mConfig.FASTCHARGE_KEY, nextMode).commit();
++        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
++        prefs.edit().putString(FastChargeConfig.FASTCHARGE_KEY, nextMode).apply();
+ 
+-        Intent intent = new Intent(mConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
+-        intent.putExtra(mConfig.EXTRA_FAST_CHARGE_MODE, nextMode);
++        Intent intent = new Intent(FastChargeConfig.ACTION_FAST_CHARGE_SERVICE_CHANGED);
++        intent.putExtra(FastChargeConfig.EXTRA_FAST_CHARGE_MODE, nextMode);
+         intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+-        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);
++        sendBroadcastAsUser(intent, UserHandle.CURRENT);
+ 
+         updateUI();
++
++        // The compact tile hides its label and subtitle, so confirm the new mode.
++        Toast.makeText(this,
++                getString(R.string.tile_toast, getString(SUBTITLES[indexOf(nextMode)])),
++                Toast.LENGTH_SHORT).show();
++    }
++
++    private void updateUI() {
++        final Tile tile = getQsTile();
++        if (tile == null) return;
++
++        final String label = getString(R.string.tile_label);
++        tile.setLabel(label);
++
++        if (!FileUtils.fileExists(mConfig.getFastChargePath())) {
++            final String subtitle = getString(R.string.tile_subtitle_unsupported);
++            tile.setIcon(Icon.createWithResource(this, R.drawable.ic_tile_super_fast));
++            tile.setSubtitle(subtitle);
++            tile.setStateDescription(subtitle);
++            tile.setState(Tile.STATE_UNAVAILABLE);
++            tile.updateTile();
++            return;
++        }
++
++        final int index = indexOf(mConfig.getCurrentMode(this));
++        final String subtitle = getString(SUBTITLES[index]);
++
++        tile.setIcon(Icon.createWithResource(this, ICONS[index]));
++        tile.setSubtitle(subtitle);
++        tile.setStateDescription(subtitle);
++        tile.setContentDescription(label);
++        // Slow looks "off" (the quiet state); Fast and Super Fast light up.
++        tile.setState(index == 0 ? Tile.STATE_INACTIVE : Tile.STATE_ACTIVE);
++        tile.updateTile();
+     }
+ 
+-    private void tryStopService() {
+-        if (mFastChargeIntent == null) return;
+-        this.stopService(mFastChargeIntent);
+-        mFastChargeIntent = null;
++    private static int indexOf(String mode) {
++        for (int i = 0; i < MODES.length; i++) {
++            if (MODES[i].equals(mode)) return i;
++        }
++        return MODES.length - 1; // default: Super Fast
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/com/android/fastcharge/ImagePreference.java b/src/com/android/fastcharge/ImagePreference.java
+index 20ab878..9ce2f4e 100644
+--- a/src/com/android/fastcharge/ImagePreference.java
++++ b/src/com/android/fastcharge/ImagePreference.java
+@@ -10,24 +10,31 @@ import android.util.AttributeSet;
+ import android.widget.ImageView;
+ import androidx.preference.Preference;
+ import androidx.preference.PreferenceViewHolder;
+-import com.android.fastcharge.R;
+ 
+ public class ImagePreference extends Preference {
+ 
+-    private ImageView imageView;
++    private float mAlpha = 1f;
+ 
+     public ImagePreference(Context context, AttributeSet attrs) {
+         super(context, attrs);
+         setLayoutResource(R.layout.fastcharge_image_layout);
+     }
+ 
++    /** Dims the illustration for slower modes (0.4 - 1.0). */
++    public void setIntensity(float alpha) {
++        if (mAlpha == alpha) return;
++        mAlpha = alpha;
++        notifyChanged();
++    }
++
+     @Override
+     public void onBindViewHolder(PreferenceViewHolder holder) {
+         super.onBindViewHolder(holder);
+ 
+-        imageView = (ImageView) holder.findViewById(R.id.fastcharge_image);
++        ImageView imageView = (ImageView) holder.findViewById(R.id.fastcharge_image);
+         if (imageView != null) {
+             imageView.setImageResource(R.drawable.ic_fastcharge_illustration);
++            imageView.animate().alpha(mAlpha).setDuration(250).start();
+         }
+     }
+ }
