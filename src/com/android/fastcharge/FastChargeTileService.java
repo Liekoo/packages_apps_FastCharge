@@ -32,19 +32,19 @@ public class FastChargeTileService extends TileService {
 
     // Index lines up across all three arrays.
     private static final String[] MODES = {
-            FastChargeConfig.MODE_SUPER_FAST,
-            FastChargeConfig.MODE_FAST,
             FastChargeConfig.MODE_SLOW,
+            FastChargeConfig.MODE_FAST,
+            FastChargeConfig.MODE_SUPER_FAST,
     };
     private static final int[] SUBTITLES = {
-            R.string.tile_subtitle_super_fast,
-            R.string.tile_subtitle_fast,
             R.string.tile_subtitle_slow,
+            R.string.tile_subtitle_fast,
+            R.string.tile_subtitle_super_fast,
     };
     private static final int[] ICONS = {
-            R.drawable.ic_tile_super_fast,
-            R.drawable.ic_tile_fast,
             R.drawable.ic_tile_slow,
+            R.drawable.ic_tile_fast,
+            R.drawable.ic_tile_super_fast,
     };
 
     private FastChargeConfig mConfig;

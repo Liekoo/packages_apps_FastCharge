@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2025 kenway214
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Illustration tint per charging mode -->
+    <color name="mode_slow">#FB8C00</color>
+    <color name="mode_fast">#43A047</color>
+    <color name="mode_super_fast">#FDD835</color>
+</resources>

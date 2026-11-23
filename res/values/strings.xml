@@ -14,22 +14,21 @@
     <string name="write_failed">Couldn\u2019t change charging speed</string>
 
     <!-- Charging modes -->
-    <string name="charging_mode_super_fast">Super Fast</string>
-    <string name="charging_mode_fast">Fast</string>
     <string name="charging_mode_slow">Slow</string>
-    
+    <string name="charging_mode_fast">Fast</string>
+    <string name="charging_mode_super_fast">Super Fast</string>
 
-    <string name="charging_mode_super_fast_summary">Maximum speed. The phone may run warmer.</string>
-    <string name="charging_mode_fast_summary">Balanced speed and heat. Good for everyday use.</string>
     <string name="charging_mode_slow_summary">Coolest and gentlest on the battery. Best for overnight.</string>
+    <string name="charging_mode_fast_summary">Balanced speed and heat. Good for everyday use.</string>
+    <string name="charging_mode_super_fast_summary">Maximum speed. The phone may run warmer.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_toast">Wired charging: %1$s</string>
     <string name="tile_label">Wired charging</string>
     <string name="tile_subtitle_unsupported">Not supported</string>
-    <string name="tile_subtitle_super_fast">Super Fast</string>
-    <string name="tile_subtitle_fast">Fast</string>
     <string name="tile_subtitle_slow">Slow</string>
+    <string name="tile_subtitle_fast">Fast</string>
+    <string name="tile_subtitle_super_fast">Super Fast</string>
 
     <!-- Live status -->
     <string name="status_title">Status</string>

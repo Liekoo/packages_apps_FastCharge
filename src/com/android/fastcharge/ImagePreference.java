@@ -6,6 +6,7 @@
 package com.android.fastcharge;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import androidx.preference.Preference;
@@ -13,17 +14,18 @@ import androidx.preference.PreferenceViewHolder;
 
 public class ImagePreference extends Preference {
 
-    private float mAlpha = 1f;
+    private int mTint;
 
     public ImagePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setLayoutResource(R.layout.fastcharge_image_layout);
+        mTint = context.getColor(R.color.mode_super_fast);
     }
 
-    /** Dims the illustration for slower modes (0.4 - 1.0). */
-    public void setIntensity(float alpha) {
-        if (mAlpha == alpha) return;
-        mAlpha = alpha;
+    /** Colors the illustration for the current mode. */
+    public void setTint(int color) {
+        if (mTint == color) return;
+        mTint = color;
         notifyChanged();
     }
 
@@ -34,7 +36,8 @@ public class ImagePreference extends Preference {
         ImageView imageView = (ImageView) holder.findViewById(R.id.fastcharge_image);
         if (imageView != null) {
             imageView.setImageResource(R.drawable.ic_fastcharge_illustration);
-            imageView.animate().alpha(mAlpha).setDuration(250).start();
+            // The artwork is a single-color shape on transparency, so SRC_IN recolors it.
+            imageView.setColorFilter(mTint, PorterDuff.Mode.SRC_IN);
         }
     }
 }

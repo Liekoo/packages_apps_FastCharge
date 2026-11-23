@@ -15,6 +15,8 @@ public class FastChargeActivity extends CollapsingToolbarBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Set explicitly so a stale cached label (after pushing a new APK) can't show a wrong title.
+        setTitle(R.string.fast_charge_title);
         getSupportFragmentManager().beginTransaction().replace(com.android.settingslib.collapsingtoolbar.R.id.content_frame,
                 new FastChargeFragment(), TAG_FAST_CHARGE).commit();
     }

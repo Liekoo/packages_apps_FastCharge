@@ -41,7 +41,6 @@
             android:title="@string/charging_mode_slow"
             android:summary="@string/charging_mode_slow_summary"
             android:persistent="false" />
-            
     </PreferenceCategory>
 
     <Preference

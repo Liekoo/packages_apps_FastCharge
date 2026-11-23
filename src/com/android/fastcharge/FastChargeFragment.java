@@ -32,14 +32,18 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment
     private static final String KEY_ILLUSTRATION = "fastcharge_illustration";
     private static final String KEY_STATUS = "fastcharge_status";
 
-    // Order matters: index lines up with MODE_VALUES / MODE_INTENSITY.
-    private static final String[] MODE_KEYS = {"mode_super_fast", "mode_fast", "mode_slow"};
+    // Order matters: index lines up with MODE_VALUES / MODE_COLORS.
+    private static final String[] MODE_KEYS = {"mode_slow", "mode_fast", "mode_super_fast"};
     private static final String[] MODE_VALUES = {
-            FastChargeConfig.MODE_SUPER_FAST,
-            FastChargeConfig.MODE_FAST,
             FastChargeConfig.MODE_SLOW,
+            FastChargeConfig.MODE_FAST,
+            FastChargeConfig.MODE_SUPER_FAST,
     };
-    private static final float[] MODE_INTENSITY = {0.45f, 0.7f, 1f};
+    private static final int[] MODE_COLORS = {
+            R.color.mode_slow,        // orange
+            R.color.mode_fast,        // green
+            R.color.mode_super_fast,  // yellow
+    };
 
     private final SelectorWithWidgetPreference[] mModePrefs =
             new SelectorWithWidgetPreference[MODE_KEYS.length];
@@ -143,7 +147,9 @@ public class FastChargeFragment extends SettingsBasePreferenceFragment
         for (int i = 0; i < mModePrefs.length; i++) {
             if (mModePrefs[i] != null) mModePrefs[i].setChecked(i == selected);
         }
-        if (mIllustration != null) mIllustration.setIntensity(MODE_INTENSITY[selected]);
+        if (mIllustration != null) {
+            mIllustration.setTint(getContext().getColor(MODE_COLORS[selected]));
+        }
     }
 
     private void updateStatus(Intent battery) {
